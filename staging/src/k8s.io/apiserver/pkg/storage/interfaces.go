@@ -157,8 +157,8 @@ func (p *Preconditions) Check(key string, obj runtime.Object) error {
 	if p.UID != nil && *p.UID != objMeta.GetUID() {
 		err := fmt.Sprintf(
 			"Precondition failed: UID in precondition: %v, UID in object meta: %v",
-			*p.UID,
-			objMeta.GetUID())
+			string(*p.UID),
+			string(objMeta.GetUID()))
 		return NewInvalidObjError(key, err)
 	}
 	if p.ResourceVersion != nil && *p.ResourceVersion != objMeta.GetResourceVersion() {
