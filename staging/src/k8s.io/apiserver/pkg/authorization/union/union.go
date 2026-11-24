@@ -161,7 +161,15 @@ func (authzHandler unionAuthzHandler) EvaluateConditions(ctx context.Context, un
 			decision, reason, err = authzHandler.evaluateConditions(ctx, currentAuthorizerName, unevaluatedSubDecision, data)
 			// Guard against impossible evaluations.
 			if !unevaluatedSubDecision.PossibleDecisions().Has(decision) {
-				decision, reason, err = unevaluatedSubDecision.FailureDecision(), "failed closed", fmt.Errorf("evaluated to decision %s, but only %v were possible", decision, sets.List(unevaluatedSubDecision.PossibleDecisions()))
+				// The possible decisions as fmt's %v prints a []Decision ("[Allow Deny]"), spelled out.
+				possible := ""
+				for i, p := range sets.List(unevaluatedSubDecision.PossibleDecisions()) {
+					if i > 0 {
+						possible += " "
+					}
+					possible += p.String()
+				}
+				decision, reason, err = unevaluatedSubDecision.FailureDecision(), "failed closed", fmt.Errorf("evaluated to decision %s, but only [%s] were possible", decision, possible)
 			}
 		default:
 			return unevaluatedDecision.FailureDecision(), "failed closed", fmt.Errorf("saw unrecognized subDecision in union authorizer EvaluateConditions: %s", unevaluatedSubDecision)

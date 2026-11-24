@@ -188,9 +188,17 @@ func (d ConditionsAwareDecision) UnconditionalPartsOrFailClosed() (Decision, str
 		return DecisionAllow, d.Reason(), d.Error()
 	default: // d is conditional, "round down" to a safe unconditional decision
 		failureDecision := d.FailureDecision()
+		// The possible outcomes as fmt's %v prints a []Decision ("[Allow Deny]"), spelled out.
+		possible := ""
+		for i, p := range sets.List(d.PossibleDecisions()) {
+			if i > 0 {
+				possible += " "
+			}
+			possible += p.String()
+		}
 		reason := fmt.Sprintf(
-			"failed closed from conditional decision (with possible outcomes %v) to %s during unconditional authorization",
-			sets.List(d.PossibleDecisions()),
+			"failed closed from conditional decision (with possible outcomes [%s]) to %s during unconditional authorization",
+			possible,
 			failureDecision.String(),
 		)
 		return failureDecision, reason, nil

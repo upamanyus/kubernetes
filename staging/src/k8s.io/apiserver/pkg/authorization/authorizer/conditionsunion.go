@@ -68,7 +68,15 @@ func (unionMap *ConditionsAwareDecisionUnion) Add(authorizerName string, d Condi
 		unionMap.errs = append(unionMap.errs, fmt.Errorf("duplicate authorizerName %q", authorizerName))
 	}
 	if errs := utilvalidation.IsDNS1123Subdomain(authorizerName); len(errs) > 0 {
-		unionMap.errs = append(unionMap.errs, fmt.Errorf("invalid authorizerName: %v", errs))
+		// The messages as fmt's %v prints a []string ("[a b]"), spelled out.
+		msgs := ""
+		for i, e := range errs {
+			if i > 0 {
+				msgs += " "
+			}
+			msgs += e
+		}
+		unionMap.errs = append(unionMap.errs, fmt.Errorf("invalid authorizerName: [%s]", msgs))
 	}
 	// Once we've seen an unconditional Allow or Deny somewhere in the chain, we can stop accepting
 	// other decisions, as they won't ever apply.
